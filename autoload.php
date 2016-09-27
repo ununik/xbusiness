@@ -9,3 +9,4 @@ function __autoload($name)
 require_once HOME_DIR . '/Configuration/defaultConstants.php';
 
 require_once HOME_DIR . '/Models/Library/forms.php';
+require_once HOME_DIR . '/Models/Library/mysql.php';

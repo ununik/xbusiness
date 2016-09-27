@@ -9,6 +9,7 @@ $errors = array();
 $hostErr = false;
 $nameErr = false;
 $loginErr = false;
+$done = false;
 
 if (isset($_POST) && count($_POST) > 0) {
 	$host = \Library\Forms\safeText($_POST['host']);
@@ -40,30 +41,41 @@ if (isset($_POST) && count($_POST) > 0) {
 				if (mysql_query('CREATE DATABASE '.$name.';', $connection) == false) {
 					$errors[] = 'Databáze neexistuje a ani nejde vytvořit.';
 				} else {
-					//All is OK
-					$constants = fopen(HOME_DIR . MYSQL_CONNECTION_CONSTANTS, "w");
-					if ($constants) {
-						$errors[] = 'Nelze vytvořit konfigurační soubor.';
-						return;
-					}
-					
-					$txt = "const DB_NAME = '$name'\n";
-					$txt .= "const DB_HOST = '$host'\n";
-					$txt .= "const DB_LOGIN = '$login'\n";
-					$txt .= "const DB_PASSWORD = '$password'\n";
-					fwrite($constants, $txt);
-					fclose($constants);
-					
-					$lock = fopen(HOME_DIR . INSTALL_LOCK, "w");
-					if ($lock) {
-						$errors[] = 'Nelze vytvořit zámek konfigurace.';
-						return;
-					}
-					fclose($lock);
+					$done = true;
 				}
+			} else {
+				$done = true;
 			}
 		} catch (Exception $e) {
 			
 		}
 	}
+}
+
+if ($done == true) {
+	//All is OK
+	$constants = fopen(HOME_DIR . MYSQL_CONNECTION_CONSTANTS, "w");
+	if ($constants == false) {
+		$errors[] = 'Nelze vytvořit konfigurační soubor.';
+		return;
+	}
+	
+	$txt .= "<?php\n";
+	$txt .= "const DB_NAME = '$name'\n";
+	$txt .= "const DB_HOST = '$host'\n";
+	$txt .= "const DB_LOGIN = '$login'\n";
+	$txt .= "const DB_PASSWORD = '$password'";
+	fwrite($constants, $txt);
+	fclose($constants);
+	
+	\Library\MySQl\parse_mysql_dump(HOME_DIR . BASIC_MySQL);
+	/*	
+	$lock = fopen(HOME_DIR . INSTALL_MySQL_LOCK, "w");
+	if ($lock == false) {
+		$errors[] = 'Nelze vytvořit zámek konfigurace.';
+		return;
+	}
+	fclose($lock);
+	
+	header("Refresh:0");*/
 }

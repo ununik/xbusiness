@@ -40,7 +40,7 @@ class HTML
 		if ($controller != '' && file_exists($controller)) {
 			include($controller);
 		}
-		if (file_exists($view)) {
+		if ($view != '' && file_exists($view)) {
 			$this->_content .= include($view);
 		}
 	}
